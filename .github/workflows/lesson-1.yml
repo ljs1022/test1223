@@ -1,0 +1,11 @@
+name: lession 1
+on:
+  push:
+    branchs:
+      - master
+jobs:
+  hello:
+    runs-on: ubuntu-latest
+    steps:
+      - name: say hello
+        run: echo "hello world"
