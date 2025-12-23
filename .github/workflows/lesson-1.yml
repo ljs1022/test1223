@@ -7,5 +7,9 @@ jobs:
   hello:
     runs-on: ubuntu-latest
     steps:
-      - name: say hello
-        run: echo "hello world"
+      - name: check os
+        run: uname -a
+      - name: check php version
+        run: php -v
+      - name: check composer version
+        run: composer -V
