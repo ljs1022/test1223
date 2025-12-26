@@ -1,8 +1,9 @@
 name: lession 1
 on:
-  push:
-    branchs:
-      - master
+#  push:
+#    branchs:
+#      - master
+  workflow_dispatch:
 jobs:
   hello:
     runs-on: ubuntu-latest
