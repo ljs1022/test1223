@@ -15,13 +15,11 @@ jobs:
         env:
           MYSQL_ROOT_PASSWORD: root
           MYSQL_DATABASE: laravel
-        ports:
-          - 3306:3306
         options: >-
-          --health-cmd="mysqladmin ping -h localhost"
+          --health-cmd="mysqladmin ping -h localhost -proot"
           --health-interval=10s
           --health-timeout=5s
-          --health-retries=5
+          --health-retries=10
 
     env:
       DB_CONNECTION: mysql
@@ -39,6 +37,7 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: '8.2'
+          extensions: pdo_mysql
 
       - name: Install dependencies
         run: composer install --no-interaction --prefer-dist --no-progress
@@ -47,6 +46,13 @@ jobs:
         run: |
           cp .env.example .env
           php artisan key:generate
+
+      - name: Wait for MySQL
+        run: |
+          for i in {1..30}; do
+            php -r 'try { new PDO("mysql:host=mysql;port=3306;dbname=laravel", "root", "root"); echo "MySQL OK\n"; exit(0); } catch (Exception $e) { echo "Waiting...\n"; sleep(2); }'
+          done
+          echo "MySQL not ready in time" && exit 1
 
       - name: Run migrations
         run: php artisan migrate --force
