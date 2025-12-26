@@ -1,4 +1,4 @@
-name: CI
+name: CI2
 
 on:
   push:
@@ -17,16 +17,18 @@ jobs:
           MYSQL_DATABASE: laravel
           MYSQL_USER: laravel
           MYSQL_PASSWORD: laravel
+        ports:
+          - 3306/tcp
         options: >-
-          --health-cmd="mysqladmin ping -h localhost -proot"
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -proot"
           --health-interval=10s
           --health-timeout=5s
           --health-retries=30
 
     env:
       DB_CONNECTION: mysql
-      DB_HOST: mysql
-      DB_PORT: 3306
+      DB_HOST: 127.0.0.1
+      DB_PORT: ${{ job.services.mysql.ports[3306] }}
       DB_DATABASE: laravel
       DB_USERNAME: laravel
       DB_PASSWORD: laravel
@@ -49,22 +51,13 @@ jobs:
           cp .env.example .env
           php artisan key:generate
 
-      - name: Debug - resolve mysql hostname
-        run: |
-          echo "== getent hosts mysql =="
-          getent hosts mysql || true
-          echo "== ping mysql =="
-          ping -c 1 mysql || true
-
-      - name: Debug - list docker containers
-        run: docker ps -a
-
-      - name: Wait for MySQL (with error output)
+      - name: Wait for MySQL (localhost)
         run: |
           for i in {1..60}; do
             php -r '
+              $port = getenv("DB_PORT");
               try {
-                new PDO("mysql:host=mysql;port=3306;dbname=laravel", "laravel", "laravel", [
+                new PDO("mysql:host=127.0.0.1;port={$port};dbname=laravel", "laravel", "laravel", [
                   PDO::ATTR_TIMEOUT => 2,
                 ]);
                 echo "MySQL OK\n";
